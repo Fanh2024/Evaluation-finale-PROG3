@@ -13,6 +13,17 @@ public class Season {
         this.endYear = endYear;
     }
 
+    public Season(String id, int startYear, int endYear, Championship championship, SeasonStatus seasonStatus) {
+        this.id = id;
+        this.startYear = startYear;
+        this.endYear = endYear;
+        this.championship = championship;
+        this.seasonStatus = seasonStatus;
+    }
+
+    public Season() {
+    }
+
     // Getters and setters
 
     public String getId() {
