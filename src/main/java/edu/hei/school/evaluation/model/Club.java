@@ -8,6 +8,19 @@ public class Club {
     private String stadiumName;
     private Championship championship;
 
+    public Club(String id, String name, String acronym, int creationYear, String stadiumName, Championship championship) {
+        this.id = id;
+        this.name = name;
+        this.acronym = acronym;
+        this.creationYear = creationYear;
+        this.stadiumName = stadiumName;
+        this.championship = championship;
+    }
+
+    public Club() {
+
+    }
+
     // Getters and setters
 
     public String getId() {

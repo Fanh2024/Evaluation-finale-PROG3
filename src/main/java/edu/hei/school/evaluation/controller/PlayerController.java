@@ -43,25 +43,11 @@ public class PlayerController {
 
     @GetMapping("/{id}/statistics/{seasonYear}")
     public ResponseEntity<PlayerStatistics> getPlayerStatistics(@PathVariable String id, @PathVariable String seasonYear) {
-        String[] parts = seasonYear.split("-");
-        if (parts.length != 2) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        int startYear, endYear;
-        try {
-            startYear = Integer.parseInt(parts[0].trim());
-            endYear = Integer.parseInt(parts[1].trim());
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        PlayerStatistics playerStatistics = playerRepository.getPlayerStatistics(id, startYear, endYear);
+        PlayerStatistics playerStatistics = playerRepository.getPlayerStatistics(id, seasonYear);
         if (playerStatistics != null) {
             return ResponseEntity.ok(playerStatistics);
         } else {
-            return ResponseEntity.status(404).build(); // Statistiques non trouvées
+            return ResponseEntity.status(404).body(null); // Statistiques non trouvées
         }
     }
-
 }

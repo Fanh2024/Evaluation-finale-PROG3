@@ -5,6 +5,16 @@ public class Championship {
     private String name;
     private String country;
 
+    public Championship(String champId, String champName, String country) {
+        this.id = champId;
+        this.name = champName;
+        this.country = country;
+    }
+
+    public Championship() {
+
+    }
+
     // Getters and setters
 
     public String getId() {
