@@ -1,6 +1,8 @@
 package edu.hei.school.evaluation.controller;
 
 import edu.hei.school.evaluation.model.Player;
+import edu.hei.school.evaluation.model.PlayerStatistics;
+import edu.hei.school.evaluation.repository.PlayerRepository;
 import edu.hei.school.evaluation.service.PlayerService;
 
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.util.List;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,9 +19,11 @@ import org.springframework.web.bind.annotation.*;
 public class PlayerController {
 
     private final PlayerService playerService;
+    private final PlayerRepository playerRepository;
 
-    public PlayerController(PlayerService playerService) {
+    public PlayerController(PlayerService playerService, PlayerRepository playerRepository) {
         this.playerService = playerService;
+        this.playerRepository = playerRepository;
     }
 
     @GetMapping
@@ -34,5 +39,15 @@ public class PlayerController {
     @PutMapping
     public List<Player> createOrUpdatePlayers(@RequestBody List<Player> players) {
         return playerService.saveOrUpdatePlayers(players);
+    }
+
+    @GetMapping("/{id}/statistics/{seasonYear}")
+    public ResponseEntity<PlayerStatistics> getPlayerStatistics(@PathVariable String id, @PathVariable String seasonYear) {
+        PlayerStatistics playerStatistics = playerRepository.getPlayerStatistics(id, seasonYear);
+        if (playerStatistics != null) {
+            return ResponseEntity.ok(playerStatistics);
+        } else {
+            return ResponseEntity.status(404).body(null); // Statistiques non trouvées
+        }
     }
 }

@@ -1,9 +1,7 @@
 package edu.hei.school.evaluation.repository;
 
 import edu.hei.school.evaluation.config.DataBaseConnexion;
-import edu.hei.school.evaluation.model.Championship;
-import edu.hei.school.evaluation.model.Club;
-import edu.hei.school.evaluation.model.Player;
+import edu.hei.school.evaluation.model.*;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -142,5 +140,63 @@ public class PlayerRepository {
                 rs.getInt("age"),
                 club
         );
+    }
+
+
+    public PlayerStatistics getPlayerStatistics(String playerId, String seasonYear) {
+        PlayerStatistics playerStatistics = null;
+        String sql = """
+            SELECT ps.id, ps.goals, ps.assists, ps.yellow_cards, ps.red_cards, ps.minutes_played,
+                   p.id AS player_id, p.name AS player_name, p.number, p.position, p.nationality, p.age,
+                   s.id AS season_id, s.start_year, s.end_year
+            FROM Player_Statistics ps
+            JOIN Player p ON ps.player_id = p.id
+            JOIN Season s ON ps.season_id = s.id
+            WHERE ps.player_id = ? AND s.start_year = ?;
+        """;
+
+        try (Connection connection = dataBaseConnexion.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setString(1, playerId);
+            stmt.setInt(2, Integer.parseInt(seasonYear));
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Player player = new Player(
+                        rs.getString("player_id"),
+                        rs.getString("player_name"),
+                        rs.getInt("number"),
+                        rs.getString("position"),
+                        rs.getString("nationality"),
+                        rs.getInt("age"),
+                        null // Le club n'est pas nécessaire ici
+                );
+
+                Season season = new Season(
+                        rs.getString("id"),
+                        rs.getInt("start_year"),
+                        rs.getInt("end_year"),
+                        null, // Le championnat n'est pas nécessaire ici
+                        null
+                );
+
+                playerStatistics = new PlayerStatistics(
+                        rs.getString("id"),
+                        player,
+                        season,
+                        rs.getInt("goals"),
+                        rs.getInt("assists"),
+                        rs.getInt("yellow_cards"),
+                        rs.getInt("red_cards"),
+                        rs.getInt("minutes_played")
+                );
+            }
+            rs.close();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error while retrieving player statistics", e);
+        }
+
+        return playerStatistics;
     }
 }

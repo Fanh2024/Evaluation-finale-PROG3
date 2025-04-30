@@ -1,6 +1,6 @@
 package edu.hei.school.evaluation.model;
 
-public class StatisticsClub {
+public class ClubStatistics {
     private String id;
     private Club club;
     private Season season;

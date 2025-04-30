@@ -40,3 +40,11 @@ INSERT INTO Championship_Ranking (id, championship_id, season_id, club_id, rank)
 INSERT INTO Club_Statistics (id, club_id, season_id, points, goals_scored, goals_conceded, goal_difference, clean_sheets) VALUES
                                                                                                                               ('STAT_RMA', 'CLUB_RMA', 'SEASON_24_25_LIGA', 0, 0, 0, 0, 0),
                                                                                                                               ('STAT_FCB', 'CLUB_FCB', 'SEASON_24_25_LIGA', 0, 0, 0, 0, 0);
+
+INSERT INTO Player_Statistics (id, player_id, season_id, goals, assists, yellow_cards, red_cards, minutes_played)
+VALUES
+    ('STAT_VINI_24_25', 'PLAYER_VINI', 'SEASON_24_25_LIGA', 10, 7, 3, 0, 2200),
+    ('STAT_KYLIAN_24_25', 'PLAYER_KYLIAN', 'SEASON_24_25_LIGA', 18, 6, 2, 0, 2400),
+    ('STAT_YAMAL_24_25', 'PLAYER_YAMAL', 'SEASON_24_25_LIGA', 5, 9, 1, 0, 1800),
+    ('STAT_TORRES_24_25', 'PLAYER_TORRES', 'SEASON_24_25_LIGA', 7, 4, 2, 1, 2000);
+
