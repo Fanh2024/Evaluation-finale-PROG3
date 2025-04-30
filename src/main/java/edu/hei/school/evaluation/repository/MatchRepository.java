@@ -4,12 +4,24 @@ import edu.hei.school.evaluation.config.DataBaseConnexion;
 import edu.hei.school.evaluation.model.*;
 
 import java.sql.*;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * Repository responsable des opérations SQL sur les matchs.
+ */
 public class MatchRepository {
     private final DataBaseConnexion db = new DataBaseConnexion();
 
+    /**
+     * Génère les matchs aller-retour pour chaque paire de clubs dans un championnat donné,
+     * si la saison est au statut STARTED et qu'aucun match n'a encore été généré.
+     *
+     * @param seasonYear Année de début de la saison
+     * @return Liste des matchs créés et insérés en base
+     */
     public List<Match> generateMatchesForSeason(int seasonYear) {
         String seasonId = null;
         String championshipId = null;
@@ -18,7 +30,7 @@ public class MatchRepository {
         List<Match> createdMatches = new ArrayList<>();
 
         try (Connection conn = db.getConnection()) {
-            // 1. Vérifier si la saison existe et son statut
+            // Récupération de la saison
             PreparedStatement seasonStmt = conn.prepareStatement("""
                 SELECT id, championship_id, season_status FROM Season WHERE start_year = ?
             """);
@@ -36,7 +48,7 @@ public class MatchRepository {
                 throw new BadRequestException("La saison n'est pas au statut STARTED");
             }
 
-            // 2. Vérifier si des matchs existent déjà pour cette saison
+            // Vérification si des matchs existent déjà
             PreparedStatement checkMatchStmt = conn.prepareStatement("""
                 SELECT COUNT(*) FROM Match WHERE season_id = ?
             """);
@@ -46,7 +58,7 @@ public class MatchRepository {
                 throw new BadRequestException("Les matchs ont déjà été générés pour cette saison");
             }
 
-            // 3. Récupérer tous les clubs du championnat
+            // Récupération des clubs participants
             PreparedStatement clubsStmt = conn.prepareStatement("""
                 SELECT id, stadium_name FROM Club WHERE championship_id = ?
             """);
@@ -64,7 +76,7 @@ public class MatchRepository {
                 throw new RuntimeException("Pas assez de clubs pour générer des matchs");
             }
 
-            // 4. Créer les matchs aller-retour
+            // Insertion des matchs
             PreparedStatement matchStmt = conn.prepareStatement("""
                 INSERT INTO Match (id, championship_id, home_club_id, away_club_id, stadium, date_time, season_id, match_status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -115,89 +127,103 @@ public class MatchRepository {
         }
     }
 
+    /**
+     * Récupère les matchs d'une saison en appliquant des filtres dynamiques.
+     *
+     * @param seasonYear Année de début de la saison
+     * @param status Filtre par statut du match (nullable)
+     * @param clubName Filtre par nom de club (nullable, ignore la casse)
+     * @param after Date après laquelle les matchs doivent avoir lieu (nullable)
+     * @param before Date jusqu'à laquelle les matchs doivent avoir lieu (nullable)
+     * @return Liste des matchs filtrés
+     */
+    public List<Match> getMatchesForSeason(int seasonYear, String status, String clubName, LocalDate after, LocalDate before) {
+        List<Match> matches = new ArrayList<>();
+        try (Connection conn = db.getConnection()) {
+            PreparedStatement seasonStmt = conn.prepareStatement("SELECT id FROM Season WHERE start_year = ?");
+            seasonStmt.setInt(1, seasonYear);
+            ResultSet seasonRs = seasonStmt.executeQuery();
+            if (!seasonRs.next()) {
+                throw new NotFoundException("Saison introuvable pour " + seasonYear);
+            }
+            String seasonId = seasonRs.getString("id");
+
+            StringBuilder query = new StringBuilder("""
+                SELECT m.* FROM Match m
+                JOIN Club h ON m.home_club_id = h.id
+                JOIN Club a ON m.away_club_id = a.id
+                WHERE m.season_id = ?
+            """);
+
+            List<Object> parameters = new ArrayList<>();
+            parameters.add(seasonId);
+
+            if (status != null) {
+                query.append(" AND m.match_status = ?");
+                parameters.add(status);
+            }
+
+            if (clubName != null) {
+                query.append(" AND (LOWER(h.name) LIKE LOWER(?) OR LOWER(a.name) LIKE LOWER(?))");
+                parameters.add("%" + clubName + "%");
+                parameters.add("%" + clubName + "%");
+            }
+
+            if (after != null) {
+                query.append(" AND DATE(m.date_time) > ?");
+                parameters.add(Date.valueOf(after));
+            }
+
+            if (before != null) {
+                query.append(" AND DATE(m.date_time) <= ?");
+                parameters.add(Date.valueOf(before));
+            }
+
+            PreparedStatement stmt = conn.prepareStatement(query.toString());
+            for (int i = 0; i < parameters.size(); i++) {
+                stmt.setObject(i + 1, parameters.get(i));
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Match match = new Match();
+                match.setId(rs.getString("id"));
+
+                Championship champ = new Championship();
+                champ.setId(rs.getString("championship_id"));
+                match.setChampionship(champ);
+
+                Club home = new Club(); home.setId(rs.getString("home_club_id"));
+                Club away = new Club(); away.setId(rs.getString("away_club_id"));
+                match.setHomeClubId(home);
+                match.setAwayClubId(away);
+                match.setStadium(rs.getString("stadium"));
+                match.setDateTime(rs.getTimestamp("date_time").toLocalDateTime());
+                match.setMatchStatus(MatchStatus.valueOf(rs.getString("match_status")));
+
+                matches.add(match);
+            }
+            return matches;
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la récupération des matchs", e);
+        }
+    }
+
+    /**
+     * Exception levée lorsqu'une ressource est introuvable.
+     */
     public static class NotFoundException extends RuntimeException {
         public NotFoundException(String msg) {
             super(msg);
         }
     }
 
+    /**
+     * Exception levée lorsqu'une requête est invalide.
+     */
     public static class BadRequestException extends RuntimeException {
         public BadRequestException(String msg) {
             super(msg);
         }
     }
 }
-
-/*
-Parfait, tu peux maintenant tester la route `/matchMaker/{seasonYear}` [POST] avec tes données existantes. Voici ce que tu dois savoir et faire :
-
----
-
-### ✅ **Cas possible 1 — Succès (200 OK)**
-
-Si :
-- la saison `SEASON_24_25_LIGA` existe,
-- son `season_status` est `STARTED`,
-- **aucun match n'existe déjà** dans la table `Match` pour cette saison,
-
-👉 alors la route génèrera automatiquement tous les matchs aller-retour entre les clubs du championnat concerné (comme dans ton exemple : RMA, FCB...).
-
----
-
-### ❌ **Cas possible 2 — Saison introuvable (404 NOT_FOUND)**
-
-Si tu appelles `/matchMaker/2026` mais qu’il n’y a **aucune saison avec `start_year = 2026`** dans la table `Season`, tu obtiendras :
-
-```json
-{
-  "message": "Saison introuvable pour 2026"
-}
-```
-
----
-
-### ❌ **Cas possible 3 — Mauvais statut (400 BAD_REQUEST)**
-
-Si la saison `SEASON_24_25_LIGA` a un `season_status` qui est **`NOT_STARTED` ou `FINISHED`**, tu obtiendras :
-
-```json
-{
-  "message": "La saison n'est pas au statut STARTED"
-}
-```
-
----
-
-### ❌ **Cas possible 4 — Matchs déjà générés (400 BAD_REQUEST)**
-
-Si des lignes `Match` existent déjà pour la `season_id = 'SEASON_24_25_LIGA'`, tu obtiendras :
-
-```json
-{
-  "message": "Les matchs ont déjà été générés pour cette saison"
-}
-```
-
-⚠️ Dans ton cas actuel, puisque tu as déjà inséré 2 matchs dans la table pour la saison `SEASON_24_25_LIGA`, **l’appel retournera 400 BAD_REQUEST** car la condition suivante est vraie :
-
-```sql
-SELECT COUNT(*) FROM Match WHERE season_id = 'SEASON_24_25_LIGA';
-```
-
-renverra `2`.
-
----
-
-### ✅ Pour tester un cas succès, tu peux faire l’un des deux :
-
-1. **Changer le `season_id` des deux matchs insérés** pour une autre saison fictive (ex: `SEASON_OLD`).
-2. **Supprimer les deux matchs** avec une requête :
-
-```sql
-DELETE FROM Match WHERE season_id = 'SEASON_24_25_LIGA';
-```
-
----
-
-Souhaites-tu que je t’aide à ajouter le contrôleur REST `/matchMaker/{seasonYear}` maintenant pour déclencher cette logique via HTTP ?
- */
