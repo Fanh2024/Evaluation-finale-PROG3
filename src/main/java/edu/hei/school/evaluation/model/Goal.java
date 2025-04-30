@@ -2,8 +2,8 @@ package edu.hei.school.evaluation.model;
 
 public class Goal {
     private String id;
-    private String playerId;
-    private String matchId;
+    private Player player;
+    private Match match;
     private int minute;
     private boolean isPenalty;
     private boolean isOwnGoal;

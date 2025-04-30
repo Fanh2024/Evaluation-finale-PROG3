@@ -4,7 +4,7 @@ public class Coach {
     private String id;
     private String name;
     private String nationality;
-    private String clubId;
+    private Club club;
 
     // Getters and setters
 }

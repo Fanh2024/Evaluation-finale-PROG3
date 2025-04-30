@@ -1,6 +1,7 @@
 package edu.hei.school.evaluation.repository;
 
 import edu.hei.school.evaluation.config.DataBaseConnexion;
+import edu.hei.school.evaluation.model.Club;
 import edu.hei.school.evaluation.model.Player;
 import org.springframework.stereotype.Repository;
 
@@ -83,8 +84,8 @@ public class PlayerRepository {
                     stmt.setString(4, player.getPosition());
                     stmt.setString(5, player.getNationality());
                     stmt.setInt(6, player.getAge());
-                    if (player.getClubId() != null) {
-                        stmt.setString(7, player.getClubId());
+                    if (player.getClub() != null) {
+                        stmt.setString(7, player.getClub().getId());
                     } else {
                         stmt.setNull(7, Types.VARCHAR);
                     }
@@ -100,6 +101,13 @@ public class PlayerRepository {
     }
 
     private Player mapToPlayer(ResultSet rs) throws SQLException {
+        String clubId = rs.getString("club_id");
+        Club club = null;
+        if (clubId != null) {
+            club = new Club();
+            club.setId(clubId);
+        }
+
         return new Player(
                 rs.getString("id"),
                 rs.getString("name"),
@@ -107,7 +115,7 @@ public class PlayerRepository {
                 rs.getString("position"),
                 rs.getString("nationality"),
                 rs.getInt("age"),
-                rs.getString("club_id")
+                club
         );
     }
 }

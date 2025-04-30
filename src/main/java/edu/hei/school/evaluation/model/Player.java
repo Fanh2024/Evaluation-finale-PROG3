@@ -7,19 +7,20 @@ public class Player {
     private String position;
     private String nationality;
     private int age;
-    private String clubId; // Peut être null
+    private Club club; // Peut être null
 
     public Player() {}
 
-    public Player(String id, String name, int number, String position, String nationality, int age, String clubId) {
+    public Player(String id, String name, int number, String position, String nationality, int age, Club club) {
         this.id = id;
         this.name = name;
         this.number = number;
         this.position = position;
         this.nationality = nationality;
         this.age = age;
-        this.clubId = clubId;
+        this.club = club;
     }
+
 
     // Getters & Setters
 
@@ -71,11 +72,11 @@ public class Player {
         this.age = age;
     }
 
-    public String getClubId() {
-        return clubId;
+    public Club getClub() {
+        return club;
     }
 
-    public void setClubId(String clubId) {
-        this.clubId = clubId;
+    public void setClub(Club club) {
+        this.club = club;
     }
 }

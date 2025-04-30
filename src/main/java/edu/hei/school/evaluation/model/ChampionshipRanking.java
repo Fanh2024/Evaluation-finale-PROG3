@@ -2,7 +2,7 @@ package edu.hei.school.evaluation.model;
 
 public class ChampionshipRanking {
     private String id;
-    private String championshipId;
+    private Championship championship;
     private String seasonId;
     private String clubId;
     private int rank;
