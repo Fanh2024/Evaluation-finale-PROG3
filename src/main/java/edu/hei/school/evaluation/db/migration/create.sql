@@ -1,9 +1,9 @@
 -- ENUM Saison & Match
-CREATE TYPE saison_status AS ENUM ('NOT_STARTED', 'STARTED', 'FINISHED');
+CREATE TYPE season_status AS ENUM ('NOT_STARTED', 'STARTED', 'FINISHED');
 CREATE TYPE match_status AS ENUM ('SCHEDULED', 'FINISHED');
 
 -- 1. Table Championnat
-CREATE TABLE Championnat (
+CREATE TABLE Championship (
                              id VARCHAR PRIMARY KEY,
                              nom VARCHAR(255) NOT NULL,
                              pays VARCHAR(255) NOT NULL
@@ -21,7 +21,7 @@ CREATE TABLE Club (
 );
 
 -- 3. Table Entraineur
-CREATE TABLE Entraineur (
+CREATE TABLE Coach (
                             id VARCHAR PRIMARY KEY,
                             nom VARCHAR(255) NOT NULL,
                             nationalite VARCHAR(255) NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE Entraineur (
 );
 
 -- 4. Table Joueur
-CREATE TABLE Joueur (
+CREATE TABLE Player (
                         id VARCHAR PRIMARY KEY,
                         nom VARCHAR(255) NOT NULL,
                         numero INT NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE Joueur (
 );
 
 -- 5. Table Saison
-CREATE TABLE Saison (
+CREATE TABLE Season (
                         id VARCHAR PRIMARY KEY,
                         annee_debut INT NOT NULL,
                         annee_fin INT NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE Match (
 );
 
 -- 7. Table Statistiques_Club
-CREATE TABLE Statistiques_Club (
+CREATE TABLE Statistics_Club (
                                    id VARCHAR PRIMARY KEY,
                                    club_id VARCHAR,
                                    saison_id VARCHAR,
@@ -82,7 +82,7 @@ CREATE TABLE Statistiques_Club (
 );
 
 -- 8. Table Statistiques_Joueur
-CREATE TABLE Statistiques_Joueur (
+CREATE TABLE Statistics_Joueur (
                                      id VARCHAR PRIMARY KEY,
                                      joueur_id VARCHAR,
                                      saison_id VARCHAR,
@@ -108,7 +108,7 @@ CREATE TABLE Goal (
 );
 
 -- 10. Table Championnat_Classement
-CREATE TABLE Championnat_Classement (
+CREATE TABLE Championship_Ranking (
                                         id VARCHAR PRIMARY KEY,
                                         championnat_id VARCHAR,
                                         saison_id VARCHAR,
