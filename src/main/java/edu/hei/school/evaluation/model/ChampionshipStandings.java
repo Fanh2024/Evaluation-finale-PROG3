@@ -1,10 +1,11 @@
 package edu.hei.school.evaluation.model;
 
-public class Entraineur {
+public class ChampionshipStandings {
     private String id;
-    private String nom;
-    private String nationalite;
+    private String championnatId;
+    private String saisonId;
     private String clubId;
+    private int rang;
 
     // Getters and setters
 }

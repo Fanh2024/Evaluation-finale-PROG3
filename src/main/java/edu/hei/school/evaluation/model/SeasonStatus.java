@@ -1,6 +1,6 @@
 package edu.hei.school.evaluation.model;
 
-public enum SaisonStatus {
+public enum SeasonStatus {
     NOT_STARTED,
     STARTED,
     FINISHED

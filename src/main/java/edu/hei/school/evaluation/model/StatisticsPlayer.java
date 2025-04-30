@@ -1,6 +1,6 @@
 package edu.hei.school.evaluation.model;
 
-public class StatistiquesJoueur {
+public class StatisticsPlayer {
     private String id;
     private String joueurId;
     private String saisonId;
