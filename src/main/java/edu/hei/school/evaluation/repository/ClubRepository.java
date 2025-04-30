@@ -3,6 +3,7 @@ package edu.hei.school.evaluation.repository;
 import edu.hei.school.evaluation.config.DataBaseConnexion;
 import edu.hei.school.evaluation.model.Championship;
 import edu.hei.school.evaluation.model.Club;
+import edu.hei.school.evaluation.model.Player;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
@@ -84,4 +85,106 @@ public class ClubRepository {
             throw new RuntimeException("Erreur lors de l'insertion/mise à jour du club", e);
         }
     }
+
+    public List<Player> getPlayersByClubId(String clubId) {
+        List<Player> players = new ArrayList<>();
+        String sql = "SELECT * FROM Player WHERE club_id = ?";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, clubId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    players.add(new Player(
+                            rs.getString("id"),
+                            rs.getString("name"),
+                            rs.getInt("number"),
+                            rs.getString("position"),
+                            rs.getString("nationality"),
+                            rs.getInt("age"),
+                            null // Pour éviter boucle infinie, club non chargé
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la récupération des joueurs du club", e);
+        }
+
+        return players;
+    }
+
+    public void insertPlayer(Player player) {
+        String sql = """
+            INSERT INTO Player (id, name, number, position, nationality, age, club_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+                name = EXCLUDED.name,
+                number = EXCLUDED.number,
+                position = EXCLUDED.position,
+                nationality = EXCLUDED.nationality,
+                age = EXCLUDED.age,
+                club_id = EXCLUDED.club_id
+        """;
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, player.getId());
+            stmt.setString(2, player.getName());
+            stmt.setInt(3, player.getNumber());
+            stmt.setString(4, player.getPosition());
+            stmt.setString(5, player.getNationality());
+            stmt.setInt(6, player.getAge());
+            if (player.getClub() != null) {
+                stmt.setString(7, player.getClub().getId());
+            } else {
+                stmt.setNull(7, Types.VARCHAR);
+            }
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de l'insertion/mise à jour du joueur", e);
+        }
+    }
+
+    public void deletePlayersByClubId(String clubId) {
+        String getPlayerIdsSql = "SELECT id FROM Player WHERE club_id = ?";
+        String deleteStatsSql = "DELETE FROM player_statistics WHERE player_id = ?";
+        String deletePlayersSql = "DELETE FROM Player WHERE club_id = ?";
+
+        try (Connection conn = db.getConnection()) {
+            conn.setAutoCommit(false); // pour exécuter tout ou rien
+
+            // Étape 1 : récupérer les IDs des joueurs du club
+            List<String> playerIds = new ArrayList<>();
+            try (PreparedStatement getIdsStmt = conn.prepareStatement(getPlayerIdsSql)) {
+                getIdsStmt.setString(1, clubId);
+                try (ResultSet rs = getIdsStmt.executeQuery()) {
+                    while (rs.next()) {
+                        playerIds.add(rs.getString("id"));
+                    }
+                }
+            }
+
+            // Étape 2 : supprimer leurs statistiques
+            try (PreparedStatement deleteStatsStmt = conn.prepareStatement(deleteStatsSql)) {
+                for (String playerId : playerIds) {
+                    deleteStatsStmt.setString(1, playerId);
+                    deleteStatsStmt.executeUpdate();
+                }
+            }
+
+            // Étape 3 : supprimer les joueurs
+            try (PreparedStatement deletePlayersStmt = conn.prepareStatement(deletePlayersSql)) {
+                deletePlayersStmt.setString(1, clubId);
+                deletePlayersStmt.executeUpdate();
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la suppression des joueurs et de leurs statistiques", e);
+        }
+    }
+
 }

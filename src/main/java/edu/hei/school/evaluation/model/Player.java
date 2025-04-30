@@ -21,6 +21,15 @@ public class Player {
         this.club = club;
     }
 
+    public Player(String id, String name, int number, String position, String nationality, int age) {
+        this.id = id;
+        this.name = name;
+        this.number = number;
+        this.position = position;
+        this.nationality = nationality;
+        this.age = age;
+    }
+
 
     // Getters & Setters
 
