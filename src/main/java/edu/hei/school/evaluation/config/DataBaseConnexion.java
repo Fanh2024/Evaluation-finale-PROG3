@@ -1,12 +1,13 @@
 package edu.hei.school.evaluation.config;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-@Component
+@Configuration
 public class DataBaseConnexion {
     private final static int defaultPort = 5432;
     private final String host = System.getenv("DATABASE_HOST");
