@@ -26,4 +26,11 @@ public class SeasonController {
         seasonService.createSeason(season);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{seasonId}/status")
+    public ResponseEntity<Void> updateSeasonStatus(@PathVariable String seasonId) {
+        seasonService.advanceSeasonStatus(seasonId);
+        return ResponseEntity.ok().build();
+    }
+
 }

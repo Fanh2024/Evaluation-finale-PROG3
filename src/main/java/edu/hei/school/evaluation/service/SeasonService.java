@@ -19,4 +19,8 @@ public class SeasonService {
     public void createSeason(Season season) {
         seasonRepository.createSeason(season);
     }
+
+    public void advanceSeasonStatus(String seasonId) {
+        seasonRepository.advanceSeasonStatus(seasonId);
+    }
 }

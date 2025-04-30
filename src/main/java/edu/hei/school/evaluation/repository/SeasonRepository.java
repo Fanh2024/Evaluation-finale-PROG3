@@ -83,4 +83,41 @@ public class SeasonRepository {
             throw new RuntimeException("Erreur lors de la création de la saison", e);
         }
     }
+
+    public void advanceSeasonStatus(String seasonId) {
+        String selectSql = "SELECT season_status FROM Season WHERE id = ?";
+        String updateSql = "UPDATE Season SET season_status = ? WHERE id = ?";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement selectStmt = conn.prepareStatement(selectSql)) {
+
+            selectStmt.setString(1, seasonId);
+            ResultSet rs = selectStmt.executeQuery();
+
+            if (!rs.next()) {
+                throw new RuntimeException("Aucune saison trouvée avec l'id : " + seasonId);
+            }
+
+            String currentStatusStr = rs.getString("season_status");
+            SeasonStatus currentStatus = SeasonStatus.valueOf(currentStatusStr);
+            SeasonStatus nextStatus;
+
+            switch (currentStatus) {
+                case NOT_STARTED -> nextStatus = SeasonStatus.STARTED;
+                case STARTED -> nextStatus = SeasonStatus.FINISHED;
+                case FINISHED -> throw new RuntimeException("La saison est déjà terminée.");
+                default -> throw new RuntimeException("Statut inconnu : " + currentStatus);
+            }
+
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                updateStmt.setString(1, nextStatus.name());
+                updateStmt.setString(2, seasonId);
+                updateStmt.executeUpdate();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la mise à jour du statut de la saison", e);
+        }
+    }
+
 }
