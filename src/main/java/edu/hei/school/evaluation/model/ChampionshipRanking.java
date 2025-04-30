@@ -2,10 +2,10 @@ package edu.hei.school.evaluation.model;
 
 public class ChampionshipRanking {
     private String id;
-    private String championnatId;
-    private String saisonId;
+    private String championshipId;
+    private String seasonId;
     private String clubId;
-    private int rang;
+    private int rank;
 
     // Getters and setters
 }

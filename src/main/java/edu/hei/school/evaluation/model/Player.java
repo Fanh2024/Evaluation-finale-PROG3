@@ -2,21 +2,21 @@ package edu.hei.school.evaluation.model;
 
 public class Player {
     private String id;
-    private String nom;
-    private int numero;
-    private String poste;
-    private String nationalite;
+    private String name;
+    private int number;
+    private String position;
+    private String nationality;
     private int age;
     private String clubId; // Peut être null
 
     public Player() {}
 
-    public Player(String id, String nom, int numero, String poste, String nationalite, int age, String clubId) {
+    public Player(String id, String name, int number, String position, String nationality, int age, String clubId) {
         this.id = id;
-        this.nom = nom;
-        this.numero = numero;
-        this.poste = poste;
-        this.nationalite = nationalite;
+        this.name = name;
+        this.number = number;
+        this.position = position;
+        this.nationality = nationality;
         this.age = age;
         this.clubId = clubId;
     }
@@ -31,36 +31,36 @@ public class Player {
         this.id = id;
     }
 
-    public String getNom() {
-        return nom;
+    public String getName() {
+        return name;
     }
 
-    public void setNom(String nom) {
-        this.nom = nom;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public int getNumero() {
-        return numero;
+    public int getNumber() {
+        return number;
     }
 
-    public void setNumero(int numero) {
-        this.numero = numero;
+    public void setNumber(int number) {
+        this.number = number;
     }
 
-    public String getPoste() {
-        return poste;
+    public String getPosition() {
+        return position;
     }
 
-    public void setPoste(String poste) {
-        this.poste = poste;
+    public void setPosition(String position) {
+        this.position = position;
     }
 
-    public String getNationalite() {
-        return nationalite;
+    public String getNationality() {
+        return nationality;
     }
 
-    public void setNationalite(String nationalite) {
-        this.nationalite = nationalite;
+    public void setNationality(String nationality) {
+        this.nationality = nationality;
     }
 
     public int getAge() {

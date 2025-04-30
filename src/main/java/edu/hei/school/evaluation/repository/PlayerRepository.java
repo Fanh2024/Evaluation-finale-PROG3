@@ -24,7 +24,7 @@ public class PlayerRepository {
         List<Object> params = new ArrayList<>();
 
         if (name != null) {
-            sql.append(" AND LOWER(p.nom) LIKE ?");
+            sql.append(" AND LOWER(p.name) LIKE ?");
             params.add("%" + name.toLowerCase() + "%");
         }
         if (ageMin != null) {
@@ -36,7 +36,7 @@ public class PlayerRepository {
             params.add(ageMax);
         }
         if (clubName != null) {
-            sql.append(" AND LOWER(c.nom) LIKE ?");
+            sql.append(" AND LOWER(c.name) LIKE ?");
             params.add("%" + clubName.toLowerCase() + "%");
         }
 
@@ -63,13 +63,13 @@ public class PlayerRepository {
         List<Player> saved = new ArrayList<>();
 
         String sql = """
-            INSERT INTO Player (id, nom, numero, poste, nationalite, age, club_id)
+            INSERT INTO Player (id, name, number, position, nationality, age, club_id)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (id) DO UPDATE SET
-              nom = EXCLUDED.nom,
-              numero = EXCLUDED.numero,
-              poste = EXCLUDED.poste,
-              nationalite = EXCLUDED.nationalite,
+              name = EXCLUDED.name,
+              number = EXCLUDED.number,
+              position = EXCLUDED.position,
+              nationality = EXCLUDED.nationality,
               age = EXCLUDED.age,
               club_id = EXCLUDED.club_id
         """;
@@ -78,10 +78,10 @@ public class PlayerRepository {
             for (Player player : players) {
                 try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                     stmt.setString(1, player.getId());
-                    stmt.setString(2, player.getNom());
-                    stmt.setInt(3, player.getNumero());
-                    stmt.setString(4, player.getPoste());
-                    stmt.setString(5, player.getNationalite());
+                    stmt.setString(2, player.getName()); // ou getName(), à corriger ci-dessous
+                    stmt.setInt(3, player.getNumber());
+                    stmt.setString(4, player.getPosition());
+                    stmt.setString(5, player.getNationality());
                     stmt.setInt(6, player.getAge());
                     if (player.getClubId() != null) {
                         stmt.setString(7, player.getClubId());
@@ -102,10 +102,10 @@ public class PlayerRepository {
     private Player mapToPlayer(ResultSet rs) throws SQLException {
         return new Player(
                 rs.getString("id"),
-                rs.getString("nom"),
-                rs.getInt("numero"),
-                rs.getString("poste"),
-                rs.getString("nationalite"),
+                rs.getString("name"),
+                rs.getInt("number"),
+                rs.getString("position"),
+                rs.getString("nationality"),
                 rs.getInt("age"),
                 rs.getString("club_id")
         );
