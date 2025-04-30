@@ -2,8 +2,8 @@ package edu.hei.school.evaluation.model;
 
 public class StatisticsPlayer {
     private String id;
-    private String playerId;
-    private String seasonId;
+    private Player player;
+    private Season season;
     private int goals;
     private int assists;
     private int yellowCards;

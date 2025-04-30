@@ -2,8 +2,8 @@ package edu.hei.school.evaluation.model;
 
 public class StatisticsClub {
     private String id;
-    private String clubId;
-    private String seasonId;
+    private Club club;
+    private Season season;
     private int points;
     private int goalsScored;
     private int goalsConceded;

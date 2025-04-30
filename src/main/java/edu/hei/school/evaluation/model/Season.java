@@ -4,7 +4,7 @@ public class Season {
     private String id;
     private int startYear;
     private int endYear;
-    private String championshipId;
+    private Championship championship;
     private SeasonStatus seasonStatus;
 
     // Getters and setters
