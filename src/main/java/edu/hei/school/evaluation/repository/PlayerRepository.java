@@ -143,23 +143,24 @@ public class PlayerRepository {
     }
 
 
-    public PlayerStatistics getPlayerStatistics(String playerId, String seasonYear) {
+    public PlayerStatistics getPlayerStatistics(String playerId, int startYear, int endYear) {
         PlayerStatistics playerStatistics = null;
         String sql = """
-            SELECT ps.id, ps.goals, ps.assists, ps.yellow_cards, ps.red_cards, ps.minutes_played,
-                   p.id AS player_id, p.name AS player_name, p.number, p.position, p.nationality, p.age,
-                   s.id AS season_id, s.start_year, s.end_year
-            FROM Player_Statistics ps
-            JOIN Player p ON ps.player_id = p.id
-            JOIN Season s ON ps.season_id = s.id
-            WHERE ps.player_id = ? AND s.start_year = ?;
-        """;
+        SELECT ps.id, ps.goals, ps.assists, ps.yellow_cards, ps.red_cards, ps.minutes_played,
+               p.id AS player_id, p.name AS player_name, p.number, p.position, p.nationality, p.age,
+               s.id AS season_id, s.start_year, s.end_year
+        FROM Player_Statistics ps
+        JOIN Player p ON ps.player_id = p.id
+        JOIN Season s ON ps.season_id = s.id
+        WHERE ps.player_id = ? AND s.start_year = ? AND s.end_year = ?;
+    """;
 
         try (Connection connection = dataBaseConnexion.getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             stmt.setString(1, playerId);
-            stmt.setInt(2, Integer.parseInt(seasonYear));
+            stmt.setInt(2, startYear);
+            stmt.setInt(3, endYear);
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -170,15 +171,14 @@ public class PlayerRepository {
                         rs.getString("position"),
                         rs.getString("nationality"),
                         rs.getInt("age"),
-                        null // Le club n'est pas nécessaire ici
+                        null // Le club n'est pas requis ici
                 );
 
                 Season season = new Season(
-                        rs.getString("id"),
+                        rs.getString("season_id"),
                         rs.getInt("start_year"),
                         rs.getInt("end_year"),
-                        null, // Le championnat n'est pas nécessaire ici
-                        null
+                        null, null
                 );
 
                 playerStatistics = new PlayerStatistics(
