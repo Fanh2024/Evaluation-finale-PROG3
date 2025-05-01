@@ -174,7 +174,7 @@ public class PlayerRepository {
                 );
 
                 Season season = new Season(
-                        rs.getString("id"),
+                        rs.getString("season_id"),
                         rs.getInt("start_year"),
                         rs.getInt("end_year"),
                         null, // Le championnat n'est pas nécessaire ici
@@ -199,4 +199,82 @@ public class PlayerRepository {
 
         return playerStatistics;
     }
+
+    public PlayerStatistics saveOrUpdatePlayerStatistics(String playerId, String seasonId, PlayerStatistics stats) {
+        String checkPlayerSql = "SELECT 1 FROM Player WHERE id = ?";
+        String checkSeasonSql = "SELECT start_year FROM Season WHERE id = ?";
+
+        String checkStatSql = "SELECT id FROM Player_Statistics WHERE player_id = ? AND season_id = ?";
+        String updateSql = """
+        UPDATE Player_Statistics
+        SET goals = ?, assists = ?, yellow_cards = ?, red_cards = ?, minutes_played = ?
+        WHERE player_id = ? AND season_id = ?
+    """;
+        String insertSql = """
+        INSERT INTO Player_Statistics (id, player_id, season_id, goals, assists, yellow_cards, red_cards, minutes_played)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """;
+
+        try (Connection conn = dataBaseConnexion.getConnection()) {
+            // Vérifie si le joueur existe
+            try (PreparedStatement checkPlayer = conn.prepareStatement(checkPlayerSql)) {
+                checkPlayer.setString(1, playerId);
+                if (!checkPlayer.executeQuery().next()) {
+                    throw new RuntimeException("Player not found with id: " + playerId);
+                }
+            }
+
+            int startYear;
+            // Vérifie si la saison existe
+            try (PreparedStatement checkSeason = conn.prepareStatement(checkSeasonSql)) {
+                checkSeason.setString(1, seasonId);
+                ResultSet rs = checkSeason.executeQuery();
+                if (rs.next()) {
+                    startYear = rs.getInt("start_year");
+                } else {
+                    throw new RuntimeException("Season not found with id: " + seasonId);
+                }
+            }
+
+            String statId;
+            // Vérifie si les stats existent déjà
+            try (PreparedStatement checkStat = conn.prepareStatement(checkStatSql)) {
+                checkStat.setString(1, playerId);
+                checkStat.setString(2, seasonId);
+                ResultSet rs = checkStat.executeQuery();
+                if (rs.next()) {
+                    statId = rs.getString("id");
+
+                    try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                        updateStmt.setInt(1, stats.getGoals());
+                        updateStmt.setInt(2, stats.getAssists());
+                        updateStmt.setInt(3, stats.getYellowCards());
+                        updateStmt.setInt(4, stats.getRedCards());
+                        updateStmt.setInt(5, stats.getMinutesPlayed());
+                        updateStmt.setString(6, playerId);
+                        updateStmt.setString(7, seasonId);
+                        updateStmt.executeUpdate();
+                    }
+                } else {
+                    statId = "STAT_" + playerId + "_" + seasonId;
+                    try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                        insertStmt.setString(1, statId);
+                        insertStmt.setString(2, playerId);
+                        insertStmt.setString(3, seasonId);
+                        insertStmt.setInt(4, stats.getGoals());
+                        insertStmt.setInt(5, stats.getAssists());
+                        insertStmt.setInt(6, stats.getYellowCards());
+                        insertStmt.setInt(7, stats.getRedCards());
+                        insertStmt.setInt(8, stats.getMinutesPlayed());
+                        insertStmt.executeUpdate();
+                    }
+                }
+            }
+
+            return getPlayerStatistics(playerId, String.valueOf(startYear));
+        } catch (SQLException e) {
+            throw new RuntimeException("Error while saving player statistics", e);
+        }
+    }
+
 }

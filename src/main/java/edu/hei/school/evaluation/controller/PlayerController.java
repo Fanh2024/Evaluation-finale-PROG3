@@ -50,4 +50,22 @@ public class PlayerController {
             return ResponseEntity.status(404).body(null); // Statistiques non trouvées
         }
     }
+
+    @PutMapping("/{id}/statistics/{seasonId}")
+    public ResponseEntity<?> createOrUpdatePlayerStatistics(
+            @PathVariable String id,
+            @PathVariable String seasonId,
+            @RequestBody PlayerStatistics statisticsInput
+    ) {
+        try {
+            PlayerStatistics saved = playerRepository.saveOrUpdatePlayerStatistics(id, seasonId, statisticsInput);
+            return ResponseEntity.ok(saved);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity.status(404).body(e.getMessage());
+            }
+            return ResponseEntity.status(500).body("Erreur serveur : " + e.getMessage());
+        }
+    }
+
 }
