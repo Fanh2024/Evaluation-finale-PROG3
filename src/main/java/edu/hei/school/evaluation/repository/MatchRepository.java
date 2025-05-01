@@ -149,11 +149,11 @@ public class MatchRepository {
             String seasonId = seasonRs.getString("id");
 
             StringBuilder query = new StringBuilder("""
-                SELECT m.* FROM Match m
-                JOIN Club h ON m.home_club_id = h.id
-                JOIN Club a ON m.away_club_id = a.id
-                WHERE m.season_id = ?
-            """);
+            SELECT m.* FROM Match m
+            JOIN Club h ON m.home_club_id = h.id
+            JOIN Club a ON m.away_club_id = a.id
+            WHERE m.season_id = ?
+        """);
 
             List<Object> parameters = new ArrayList<>();
             parameters.add(seasonId);
@@ -164,19 +164,29 @@ public class MatchRepository {
             }
 
             if (clubName != null) {
-                query.append(" AND (LOWER(h.name) LIKE LOWER(?) OR LOWER(a.name) LIKE LOWER(?))");
-                parameters.add("%" + clubName + "%");
-                parameters.add("%" + clubName + "%");
+                query.append("""
+                AND (
+                    LOWER(h.name) LIKE LOWER(?)
+                    OR LOWER(a.name) LIKE LOWER(?)
+                    OR LOWER(h.acronym) LIKE LOWER(?)
+                    OR LOWER(a.acronym) LIKE LOWER(?)
+                )
+            """);
+                String likeClub = "%" + clubName + "%";
+                parameters.add(likeClub);
+                parameters.add(likeClub);
+                parameters.add(likeClub);
+                parameters.add(likeClub);
             }
 
             if (after != null) {
-                query.append(" AND DATE(m.date_time) > ?");
-                parameters.add(Date.valueOf(after));
+                query.append(" AND m.date_time > ?");
+                parameters.add(Timestamp.valueOf(after.atStartOfDay()));
             }
 
             if (before != null) {
-                query.append(" AND DATE(m.date_time) <= ?");
-                parameters.add(Date.valueOf(before));
+                query.append(" AND m.date_time <= ?");
+                parameters.add(Timestamp.valueOf(before.atTime(23, 59, 59)));
             }
 
             PreparedStatement stmt = conn.prepareStatement(query.toString());
@@ -197,6 +207,7 @@ public class MatchRepository {
                 Club away = new Club(); away.setId(rs.getString("away_club_id"));
                 match.setHomeClubId(home);
                 match.setAwayClubId(away);
+
                 match.setStadium(rs.getString("stadium"));
                 match.setDateTime(rs.getTimestamp("date_time").toLocalDateTime());
                 match.setMatchStatus(MatchStatus.valueOf(rs.getString("match_status")));

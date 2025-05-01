@@ -1,6 +1,7 @@
 package edu.hei.school.evaluation.controller;
 
 import edu.hei.school.evaluation.model.Match;
+import edu.hei.school.evaluation.repository.MatchRepository;
 import edu.hei.school.evaluation.service.MatchService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -25,15 +26,25 @@ public class MatchController {
     }
 
     @GetMapping("/{seasonYear}")
-    public ResponseEntity<List<Match>> getMatchesForSeason(
+    public ResponseEntity<?> getMatchesForSeason(
             @PathVariable int seasonYear,
             @RequestParam(required = false) String matchStatus,
             @RequestParam(required = false) String clubPlayingName,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate matchAfter,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate matchBeforeOrEquals
     ) {
-        List<Match> matches = matchService.getMatchesForSeason(
-                seasonYear, matchStatus, clubPlayingName, matchAfter, matchBeforeOrEquals);
-        return ResponseEntity.ok(matches);
+        try {
+            List<Match> matches = matchService.getMatchesForSeason(
+                    seasonYear, matchStatus, clubPlayingName, matchAfter, matchBeforeOrEquals);
+            if (matches.isEmpty()) {
+                return ResponseEntity.status(404).body("Aucun match trouvé pour cette saison avec les filtres fournis.");
+            }
+            return ResponseEntity.ok(matches);
+        } catch (MatchRepository.NotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Erreur serveur : " + e.getMessage());
+        }
     }
+
 }
