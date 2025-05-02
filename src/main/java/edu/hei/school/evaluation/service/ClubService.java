@@ -32,9 +32,9 @@ public class ClubService {
         clubRepository.insertPlayer(player);
     }
 
-    public void replacePlayersInClub(String clubId, List<Player> players) {
-        clubRepository.deletePlayersByClubId(clubId);
-        for (Player player : players) {
+    public void replacePlayersInClub(String clubId, List<Player> newPlayers) {
+        clubRepository.updatePlayersForClub(clubId, newPlayers);
+        for (Player player : newPlayers) {
             player.setClub(new Club(clubId, null, null, 0, null, null));
             clubRepository.insertPlayer(player);
         }

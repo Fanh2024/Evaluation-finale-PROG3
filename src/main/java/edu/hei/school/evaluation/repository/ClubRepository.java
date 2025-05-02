@@ -148,42 +148,62 @@ public class ClubRepository {
         }
     }
 
-    public void deletePlayersByClubId(String clubId) {
-        String getPlayerIdsSql = "SELECT id FROM Player WHERE club_id = ?";
-        String deleteStatsSql = "DELETE FROM player_statistics WHERE player_id = ?";
-        String deletePlayersSql = "DELETE FROM Player WHERE club_id = ?";
+    public List<Player> updatePlayersForClub(String clubId, List<Player> newPlayers) {
+        String checkClubSql = "SELECT COUNT(*) FROM Club WHERE id = ?";
+        String selectExistingSql = "SELECT id FROM Player WHERE club_id = ?";
+        String detachSql = "UPDATE Player SET club_id = NULL WHERE club_id = ?";
+        String attachSql = "UPDATE Player SET club_id = ? WHERE id = ?";
+        String checkAlreadyAssignedSql = "SELECT id FROM Player WHERE id = ? AND (club_id IS NOT NULL AND club_id != ?)";
 
         try (Connection conn = db.getConnection()) {
-            conn.setAutoCommit(false); // pour exécuter tout ou rien
+            conn.setAutoCommit(false);
 
-            // Étape 1 : récupérer les IDs des joueurs du club
-            List<String> playerIds = new ArrayList<>();
-            try (PreparedStatement getIdsStmt = conn.prepareStatement(getPlayerIdsSql)) {
-                getIdsStmt.setString(1, clubId);
-                try (ResultSet rs = getIdsStmt.executeQuery()) {
-                    while (rs.next()) {
-                        playerIds.add(rs.getString("id"));
+            // Vérification de l'existence du club
+            try (PreparedStatement checkStmt = conn.prepareStatement(checkClubSql)) {
+                checkStmt.setString(1, clubId);
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (!rs.next() || rs.getInt(1) == 0) {
+                        throw new MatchRepository.NotFoundException("Club introuvable avec l'ID " + clubId);
                     }
                 }
             }
 
-            // Étape 2 : supprimer leurs statistiques
-            try (PreparedStatement deleteStatsStmt = conn.prepareStatement(deleteStatsSql)) {
-                for (String playerId : playerIds) {
-                    deleteStatsStmt.setString(1, playerId);
-                    deleteStatsStmt.executeUpdate();
+            // Vérification : les nouveaux joueurs ne doivent pas déjà appartenir à un autre club
+            for (Player p : newPlayers) {
+                try (PreparedStatement checkAssignedStmt = conn.prepareStatement(checkAlreadyAssignedSql)) {
+                    checkAssignedStmt.setString(1, p.getId());
+                    checkAssignedStmt.setString(2, clubId);
+                    try (ResultSet rs = checkAssignedStmt.executeQuery()) {
+                        if (rs.next()) {
+                            conn.rollback();
+                            throw new MatchRepository.BadRequestException("Le joueur " + p.getId() + " est déjà affecté à un autre club.");
+                        }
+                    }
                 }
             }
 
-            // Étape 3 : supprimer les joueurs
-            try (PreparedStatement deletePlayersStmt = conn.prepareStatement(deletePlayersSql)) {
-                deletePlayersStmt.setString(1, clubId);
-                deletePlayersStmt.executeUpdate();
+            // Détacher les anciens joueurs du club (sans supprimer)
+            try (PreparedStatement detachStmt = conn.prepareStatement(detachSql)) {
+                detachStmt.setString(1, clubId);
+                detachStmt.executeUpdate();
+            }
+
+            // Attacher les nouveaux joueurs au club
+            try (PreparedStatement attachStmt = conn.prepareStatement(attachSql)) {
+                for (Player p : newPlayers) {
+                    attachStmt.setString(1, clubId);
+                    attachStmt.setString(2, p.getId());
+                    attachStmt.executeUpdate();
+                }
             }
 
             conn.commit();
+
+            // Retourner les nouveaux joueurs associés
+            return newPlayers;
+
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la suppression des joueurs et de leurs statistiques", e);
+            throw new RuntimeException("Erreur lors de la mise à jour des joueurs du club " + clubId, e);
         }
     }
 

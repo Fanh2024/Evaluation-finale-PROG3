@@ -32,8 +32,8 @@ public class MatchRepository {
         try (Connection conn = db.getConnection()) {
             // Récupération de la saison
             PreparedStatement seasonStmt = conn.prepareStatement("""
-                SELECT id, championship_id, season_status FROM Season WHERE start_year = ?
-            """);
+            SELECT id, championship_id, season_status FROM Season WHERE start_year = ?
+        """);
             seasonStmt.setInt(1, seasonYear);
             ResultSet seasonRs = seasonStmt.executeQuery();
             if (seasonRs.next()) {
@@ -44,14 +44,15 @@ public class MatchRepository {
                 throw new NotFoundException("Saison introuvable pour " + seasonYear);
             }
 
+            // Vérification du statut de la saison
             if (seasonStatus != SeasonStatus.STARTED) {
                 throw new BadRequestException("La saison n'est pas au statut STARTED");
             }
 
-            // Vérification si des matchs existent déjà
+            // Vérification de l'existence des matchs
             PreparedStatement checkMatchStmt = conn.prepareStatement("""
-                SELECT COUNT(*) FROM Match WHERE season_id = ?
-            """);
+            SELECT COUNT(*) FROM Match WHERE season_id = ?
+        """);
             checkMatchStmt.setString(1, seasonId);
             ResultSet matchRs = checkMatchStmt.executeQuery();
             if (matchRs.next() && matchRs.getInt(1) > 0) {
@@ -60,8 +61,8 @@ public class MatchRepository {
 
             // Récupération des clubs participants
             PreparedStatement clubsStmt = conn.prepareStatement("""
-                SELECT id, stadium_name FROM Club WHERE championship_id = ?
-            """);
+            SELECT id, stadium_name FROM Club WHERE championship_id = ?
+        """);
             clubsStmt.setString(1, championshipId);
             ResultSet clubsRs = clubsStmt.executeQuery();
             Map<String, String> clubStadiums = new HashMap<>();
@@ -78,11 +79,11 @@ public class MatchRepository {
 
             // Insertion des matchs
             PreparedStatement matchStmt = conn.prepareStatement("""
-                INSERT INTO Match (id, championship_id, home_club_id, away_club_id, stadium, date_time, season_id, match_status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """);
+            INSERT INTO Match (id, championship_id, home_club_id, away_club_id, stadium, date_time, season_id, match_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """);
 
-            LocalDateTime matchTime = LocalDateTime.of(seasonYear, 8, 1, 20, 45);
+            LocalDateTime matchTime = LocalDateTime.of(seasonYear, 8, 1, 20, 45); // Date de départ pour le premier match
             for (int i = 0; i < clubIds.size(); i++) {
                 for (int j = 0; j < clubIds.size(); j++) {
                     if (i != j) {
@@ -97,10 +98,11 @@ public class MatchRepository {
                         matchStmt.setString(5, clubStadiums.get(homeClub));
                         matchStmt.setTimestamp(6, Timestamp.valueOf(matchTime));
                         matchStmt.setString(7, seasonId);
-                        matchStmt.setString(8, MatchStatus.SCHEDULED.name());
+                        matchStmt.setString(8, MatchStatus.STARTED.name());
 
                         matchStmt.addBatch();
 
+                        // Création des objets Match pour ajouter à la liste de réponse
                         Match match = new Match();
                         match.setId(matchId);
                         match.setChampionship(new Championship());
@@ -111,15 +113,17 @@ public class MatchRepository {
                         match.setAwayClubId(away);
                         match.setStadium(clubStadiums.get(homeClub));
                         match.setDateTime(matchTime);
-                        match.setMatchStatus(MatchStatus.SCHEDULED);
+                        match.setMatchStatus(MatchStatus.STARTED);
 
                         createdMatches.add(match);
 
+                        // Incrementer la date pour le prochain match
                         matchTime = matchTime.plusDays(3);
                     }
                 }
             }
 
+            // Exécution de l'insertion des matchs
             matchStmt.executeBatch();
             return createdMatches;
         } catch (SQLException e) {

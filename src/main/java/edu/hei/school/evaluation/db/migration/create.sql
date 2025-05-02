@@ -1,6 +1,6 @@
 -- ENUM Saison & Match
 CREATE TYPE season_status AS ENUM ('NOT_STARTED', 'STARTED', 'FINISHED');
-CREATE TYPE match_status AS ENUM ('SCHEDULED', 'FINISHED');
+CREATE TYPE match_status AS ENUM ('NOT_STARTED', 'STARTED', 'FINISHED');
 
 -- 1. Table Championnat
 CREATE TABLE Championship (

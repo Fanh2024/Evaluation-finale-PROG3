@@ -30,8 +30,8 @@ INSERT INTO Season (id, start_year, end_year, championship_id, season_status) VA
                                                                                   ('SEASON_24_25_L1', 2024, 2025, 'CHAMP_L1', 'STARTED');
 
 INSERT INTO Match (id, championship_id, home_club_id, away_club_id, stadium, date_time, season_id, match_status) VALUES
-                                                                                                                     ('MATCH_1', 'CHAMP_LIGA', 'CLUB_RMA', 'CLUB_FCB', 'Santiago Bernabeu', '2025-05-01 21:00:00', 'SEASON_24_25_LIGA', 'SCHEDULED'),
-                                                                                                                     ('MATCH_2', 'CHAMP_LIGA', 'CLUB_FCB', 'CLUB_RMA', 'Lluís Companys', '2025-05-08 18:00:00', 'SEASON_24_25_LIGA', 'SCHEDULED');
+                                                                                                                     ('MATCH_1', 'CHAMP_LIGA', 'CLUB_RMA', 'CLUB_FCB', 'Santiago Bernabeu', '2025-05-01 21:00:00', 'SEASON_24_25_LIGA', 'STARTED'),
+                                                                                                                     ('MATCH_2', 'CHAMP_LIGA', 'CLUB_FCB', 'CLUB_RMA', 'Lluís Companys', '2025-05-08 18:00:00', 'SEASON_24_25_LIGA', 'STARTED');
 
 INSERT INTO Championship_Ranking (id, championship_id, season_id, club_id, rank) VALUES
                                                                                      ('RANK1', 'CHAMP_LIGA', 'SEASON_24_25_LIGA', 'CLUB_RMA', 1),
