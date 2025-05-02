@@ -142,18 +142,19 @@ public class PlayerRepository {
         );
     }
 
-
     public PlayerStatistics getPlayerStatistics(String playerId, String seasonYear) {
         PlayerStatistics playerStatistics = null;
+
         String sql = """
-            SELECT ps.id, ps.goals, ps.assists, ps.yellow_cards, ps.red_cards, ps.minutes_played,
-                   p.id AS player_id, p.name AS player_name, p.number, p.position, p.nationality, p.age,
-                   s.id AS season_id, s.start_year, s.end_year
-            FROM Player_Statistics ps
-            JOIN Player p ON ps.player_id = p.id
-            JOIN Season s ON ps.season_id = s.id
-            WHERE ps.player_id = ? AND s.start_year = ?;
-        """;
+        SELECT ps.id,
+               ps.assists, ps.yellow_cards, ps.red_cards, ps.minutes_played,
+               p.id AS player_id, p.name AS player_name, p.number, p.position, p.nationality, p.age,
+               s.id AS season_id, s.start_year, s.end_year
+        FROM Player_Statistics ps
+        JOIN Player p ON ps.player_id = p.id
+        JOIN Season s ON ps.season_id = s.id
+        WHERE ps.player_id = ? AND s.start_year = ?
+    """;
 
         try (Connection connection = dataBaseConnexion.getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -170,22 +171,41 @@ public class PlayerRepository {
                         rs.getString("position"),
                         rs.getString("nationality"),
                         rs.getInt("age"),
-                        null // Le club n'est pas nécessaire ici
+                        null
                 );
 
                 Season season = new Season(
                         rs.getString("season_id"),
                         rs.getInt("start_year"),
                         rs.getInt("end_year"),
-                        null, // Le championnat n'est pas nécessaire ici
+                        null,
                         null
                 );
+
+                // ✅ Nouvelle requête : compter les buts valides
+                String goalCountSql = """
+                SELECT COUNT(*) AS total_goals
+                FROM Goal g
+                JOIN Match m ON g.match_id = m.id
+                WHERE g.player_id = ? AND g.is_own_goal = FALSE AND m.season_id = ?
+            """;
+
+                int goals = 0;
+                try (PreparedStatement goalStmt = connection.prepareStatement(goalCountSql)) {
+                    goalStmt.setString(1, playerId);
+                    goalStmt.setString(2, rs.getString("season_id"));
+                    ResultSet goalRs = goalStmt.executeQuery();
+                    if (goalRs.next()) {
+                        goals = goalRs.getInt("total_goals");
+                    }
+                    goalRs.close();
+                }
 
                 playerStatistics = new PlayerStatistics(
                         rs.getString("id"),
                         player,
                         season,
-                        rs.getInt("goals"),
+                        goals,
                         rs.getInt("assists"),
                         rs.getInt("yellow_cards"),
                         rs.getInt("red_cards"),
@@ -207,12 +227,12 @@ public class PlayerRepository {
         String checkStatSql = "SELECT id FROM Player_Statistics WHERE player_id = ? AND season_id = ?";
         String updateSql = """
         UPDATE Player_Statistics
-        SET goals = ?, assists = ?, yellow_cards = ?, red_cards = ?, minutes_played = ?
+        SET assists = ?, yellow_cards = ?, red_cards = ?, minutes_played = ?
         WHERE player_id = ? AND season_id = ?
     """;
         String insertSql = """
-        INSERT INTO Player_Statistics (id, player_id, season_id, goals, assists, yellow_cards, red_cards, minutes_played)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO Player_Statistics (id, player_id, season_id, assists, yellow_cards, red_cards, minutes_played)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """;
 
         try (Connection conn = dataBaseConnexion.getConnection()) {
@@ -243,29 +263,28 @@ public class PlayerRepository {
                 checkStat.setString(2, seasonId);
                 ResultSet rs = checkStat.executeQuery();
                 if (rs.next()) {
+                    // Mise à jour
                     statId = rs.getString("id");
-
                     try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
-                        updateStmt.setInt(1, stats.getGoals());
-                        updateStmt.setInt(2, stats.getAssists());
-                        updateStmt.setInt(3, stats.getYellowCards());
-                        updateStmt.setInt(4, stats.getRedCards());
-                        updateStmt.setInt(5, stats.getMinutesPlayed());
-                        updateStmt.setString(6, playerId);
-                        updateStmt.setString(7, seasonId);
+                        updateStmt.setInt(1, stats.getAssists());
+                        updateStmt.setInt(2, stats.getYellowCards());
+                        updateStmt.setInt(3, stats.getRedCards());
+                        updateStmt.setInt(4, stats.getMinutesPlayed());
+                        updateStmt.setString(5, playerId);
+                        updateStmt.setString(6, seasonId);
                         updateStmt.executeUpdate();
                     }
                 } else {
+                    // Insertion
                     statId = "STAT_" + playerId + "_" + seasonId;
                     try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
                         insertStmt.setString(1, statId);
                         insertStmt.setString(2, playerId);
                         insertStmt.setString(3, seasonId);
-                        insertStmt.setInt(4, stats.getGoals());
-                        insertStmt.setInt(5, stats.getAssists());
-                        insertStmt.setInt(6, stats.getYellowCards());
-                        insertStmt.setInt(7, stats.getRedCards());
-                        insertStmt.setInt(8, stats.getMinutesPlayed());
+                        insertStmt.setInt(4, stats.getAssists());
+                        insertStmt.setInt(5, stats.getYellowCards());
+                        insertStmt.setInt(6, stats.getRedCards());
+                        insertStmt.setInt(7, stats.getMinutesPlayed());
                         insertStmt.executeUpdate();
                     }
                 }
@@ -276,5 +295,4 @@ public class PlayerRepository {
             throw new RuntimeException("Error while saving player statistics", e);
         }
     }
-
 }

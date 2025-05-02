@@ -11,7 +11,8 @@ public class PlayerStatistics {
     private int minutesPlayed;
 
     // Constructeur
-    public PlayerStatistics(String id, Player player, Season season, int goals, int assists, int yellowCards, int redCards, int minutesPlayed) {
+    public PlayerStatistics(String id, Player player, Season season,
+                            int goals, int assists, int yellowCards, int redCards, int minutesPlayed) {
         this.id = id;
         this.player = player;
         this.season = season;
@@ -20,6 +21,13 @@ public class PlayerStatistics {
         this.yellowCards = yellowCards;
         this.redCards = redCards;
         this.minutesPlayed = minutesPlayed;
+    }
+
+    public int getGoals() {
+        return goals;
+    }
+
+    public PlayerStatistics() {
     }
 
     // Getters and setters
@@ -45,14 +53,6 @@ public class PlayerStatistics {
 
     public void setSeason(Season season) {
         this.season = season;
-    }
-
-    public int getGoals() {
-        return goals;
-    }
-
-    public void setGoals(int goals) {
-        this.goals = goals;
     }
 
     public int getAssists() {

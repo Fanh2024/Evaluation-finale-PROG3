@@ -41,10 +41,28 @@ INSERT INTO Club_Statistics (id, club_id, season_id, points, goals_scored, goals
                                                                                                                               ('STAT_RMA', 'CLUB_RMA', 'SEASON_24_25_LIGA', 0, 0, 0, 0, 0),
                                                                                                                               ('STAT_FCB', 'CLUB_FCB', 'SEASON_24_25_LIGA', 0, 0, 0, 0, 0);
 
-INSERT INTO Player_Statistics (id, player_id, season_id, goals, assists, yellow_cards, red_cards, minutes_played)
+INSERT INTO Player_Statistics (id, player_id, season_id, assists, yellow_cards, red_cards, minutes_played)
 VALUES
-    ('STAT_VINI_24_25', 'PLAYER_VINI', 'SEASON_24_25_LIGA', 10, 7, 3, 0, 2200),
-    ('STAT_KYLIAN_24_25', 'PLAYER_KYLIAN', 'SEASON_24_25_LIGA', 18, 6, 2, 0, 2400),
-    ('STAT_YAMAL_24_25', 'PLAYER_YAMAL', 'SEASON_24_25_LIGA', 5, 9, 1, 0, 1800),
-    ('STAT_TORRES_24_25', 'PLAYER_TORRES', 'SEASON_24_25_LIGA', 7, 4, 2, 1, 2000);
+    ('STAT_VINI_24_25', 'PLAYER_VINI', 'SEASON_24_25_LIGA', 7, 3, 0, 2200),
+    ('STAT_KYLIAN_24_25', 'PLAYER_KYLIAN', 'SEASON_24_25_LIGA', 6, 2, 0, 2400),
+    ('STAT_YAMAL_24_25', 'PLAYER_YAMAL', 'SEASON_24_25_LIGA', 9, 1, 0, 1800),
+    ('STAT_TORRES_24_25', 'PLAYER_TORRES', 'SEASON_24_25_LIGA', 4, 2, 1, 2000);
 
+
+-- Buts de Vinicius Jr dans MATCH_1
+INSERT INTO Goal (id, player_id, match_id, minute, is_penalty, is_own_goal) VALUES
+                                                                                ('GOAL_1', 'PLAYER_VINI', 'MATCH_1', 23, FALSE, FALSE),
+                                                                                ('GOAL_2', 'PLAYER_VINI', 'MATCH_1', 67, FALSE, FALSE);
+
+-- Buts de Mbappé dans MATCH_1
+INSERT INTO Goal (id, player_id, match_id, minute, is_penalty, is_own_goal) VALUES
+                                                                                ('GOAL_3', 'PLAYER_KYLIAN', 'MATCH_1', 10, TRUE, FALSE),
+                                                                                ('GOAL_4', 'PLAYER_KYLIAN', 'MATCH_1', 89, FALSE, FALSE);
+
+-- But de Lamine Yamal dans MATCH_2
+INSERT INTO Goal (id, player_id, match_id, minute, is_penalty, is_own_goal) VALUES
+    ('GOAL_5', 'PLAYER_YAMAL', 'MATCH_2', 31, FALSE, FALSE);
+
+-- But contre son camp de Ferran Torres dans MATCH_2
+INSERT INTO Goal (id, player_id, match_id, minute, is_penalty, is_own_goal) VALUES
+    ('GOAL_6', 'PLAYER_TORRES', 'MATCH_2', 76, FALSE, TRUE);
