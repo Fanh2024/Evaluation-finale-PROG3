@@ -86,7 +86,6 @@ CREATE TABLE Player_Statistics (
                                    id VARCHAR PRIMARY KEY,
                                    player_id VARCHAR,
                                    season_id VARCHAR,
-                                   goals INT DEFAULT 0,
                                    assists INT DEFAULT 0,
                                    yellow_cards INT DEFAULT 0,
                                    red_cards INT DEFAULT 0,

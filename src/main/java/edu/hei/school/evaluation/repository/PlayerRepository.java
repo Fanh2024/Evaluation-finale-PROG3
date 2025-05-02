@@ -148,10 +148,18 @@ public class PlayerRepository {
         String sql = """
         SELECT ps.id,
                ps.assists, ps.yellow_cards, ps.red_cards, ps.minutes_played,
+
                p.id AS player_id, p.name AS player_name, p.number, p.position, p.nationality, p.age,
+
+               c.id AS club_id, c.name AS club_name, c.acronym, c.creation_year, c.stadium_name,
+               ch.id AS ch_id, ch.name AS ch_name, ch.country AS ch_country,
+
                s.id AS season_id, s.start_year, s.end_year
+
         FROM Player_Statistics ps
         JOIN Player p ON ps.player_id = p.id
+        LEFT JOIN Club c ON p.club_id = c.id
+        LEFT JOIN Championship ch ON c.championship_id = ch.id
         JOIN Season s ON ps.season_id = s.id
         WHERE ps.player_id = ? AND s.start_year = ?
     """;
@@ -164,6 +172,28 @@ public class PlayerRepository {
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
+
+                Championship championship = null;
+                if (rs.getString("ch_id") != null) {
+                    championship = new Championship(
+                            rs.getString("ch_id"),
+                            rs.getString("ch_name"),
+                            rs.getString("ch_country")
+                    );
+                }
+
+                Club club = null;
+                if (rs.getString("club_id") != null) {
+                    club = new Club(
+                            rs.getString("club_id"),
+                            rs.getString("club_name"),
+                            rs.getString("acronym"),
+                            rs.getInt("creation_year"),
+                            rs.getString("stadium_name"),
+                            championship
+                    );
+                }
+
                 Player player = new Player(
                         rs.getString("player_id"),
                         rs.getString("player_name"),
@@ -171,7 +201,7 @@ public class PlayerRepository {
                         rs.getString("position"),
                         rs.getString("nationality"),
                         rs.getInt("age"),
-                        null
+                        club
                 );
 
                 Season season = new Season(
@@ -182,7 +212,7 @@ public class PlayerRepository {
                         null
                 );
 
-                // ✅ Nouvelle requête : compter les buts valides
+                // ✅ Récupération du nombre de buts
                 String goalCountSql = """
                 SELECT COUNT(*) AS total_goals
                 FROM Goal g
