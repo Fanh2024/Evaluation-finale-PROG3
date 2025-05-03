@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/matches")
 public class MatchController {
     private final MatchService matchService;
 
@@ -19,13 +18,15 @@ public class MatchController {
         this.matchService = new MatchService();
     }
 
-    @PostMapping("/{seasonYear}")
+    // 1. POST /matchMaker/{seasonYear}
+    @PostMapping("/matchMaker/{seasonYear}")
     public ResponseEntity<Void> generateMatches(@PathVariable int seasonYear) {
         matchService.generateMatchesForSeason(seasonYear);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{seasonYear}")
+    // 2. GET /matches/{seasonYear}
+    @GetMapping("/matches/{seasonYear}")
     public ResponseEntity<?> getMatchesForSeason(
             @PathVariable int seasonYear,
             @RequestParam(required = false) String matchStatus,
@@ -46,5 +47,4 @@ public class MatchController {
             return ResponseEntity.status(500).body("Erreur serveur : " + e.getMessage());
         }
     }
-
 }
