@@ -1,6 +1,8 @@
 package edu.hei.school.evaluation.repository;
 
 import edu.hei.school.evaluation.config.DataBaseConnexion;
+import edu.hei.school.evaluation.exception.BadRequestException;
+import edu.hei.school.evaluation.exception.NotFoundException;
 import edu.hei.school.evaluation.model.Championship;
 import edu.hei.school.evaluation.model.Club;
 import edu.hei.school.evaluation.model.Player;
@@ -163,7 +165,7 @@ public class ClubRepository {
                 checkStmt.setString(1, clubId);
                 try (ResultSet rs = checkStmt.executeQuery()) {
                     if (!rs.next() || rs.getInt(1) == 0) {
-                        throw new MatchRepository.NotFoundException("Club introuvable avec l'ID " + clubId);
+                        throw new NotFoundException("Club introuvable avec l'ID " + clubId);
                     }
                 }
             }
@@ -176,7 +178,7 @@ public class ClubRepository {
                     try (ResultSet rs = checkAssignedStmt.executeQuery()) {
                         if (rs.next()) {
                             conn.rollback();
-                            throw new MatchRepository.BadRequestException("Le joueur " + p.getId() + " est déjà affecté à un autre club.");
+                            throw new BadRequestException("Le joueur " + p.getId() + " est déjà affecté à un autre club.");
                         }
                     }
                 }

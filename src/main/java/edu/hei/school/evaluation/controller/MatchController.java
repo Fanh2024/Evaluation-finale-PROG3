@@ -1,6 +1,8 @@
 package edu.hei.school.evaluation.controller;
 
+import edu.hei.school.evaluation.exception.NotFoundException;
 import edu.hei.school.evaluation.model.Match;
+import edu.hei.school.evaluation.model.MatchLight;
 import edu.hei.school.evaluation.repository.MatchRepository;
 import edu.hei.school.evaluation.service.MatchService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -35,13 +37,13 @@ public class MatchController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate matchBeforeOrEquals
     ) {
         try {
-            List<Match> matches = matchService.getMatchesForSeason(
+            List<MatchLight> matches = matchService.getMatchesForSeason(
                     seasonYear, matchStatus, clubPlayingName, matchAfter, matchBeforeOrEquals);
             if (matches.isEmpty()) {
                 return ResponseEntity.status(404).body("Aucun match trouvé pour cette saison avec les filtres fournis.");
             }
             return ResponseEntity.ok(matches);
-        } catch (MatchRepository.NotFoundException e) {
+        } catch (NotFoundException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Erreur serveur : " + e.getMessage());

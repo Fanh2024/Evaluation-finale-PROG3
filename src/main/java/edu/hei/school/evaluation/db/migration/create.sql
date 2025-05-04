@@ -34,12 +34,30 @@ CREATE TABLE Player (
                         id VARCHAR PRIMARY KEY,
                         name VARCHAR(255) NOT NULL,
                         number INT NOT NULL,
-                        position VARCHAR(255) NOT NULL,
+                        position VARCHAR(255) NOT NULL CHECK (position IN ('STRIKER', 'MIDFIELDER', 'DEFENSE', 'GOAL_KEEPER')),
                         nationality VARCHAR(255) NOT NULL,
                         age INT NOT NULL,
                         club_id VARCHAR,
                         FOREIGN KEY (club_id) REFERENCES Club(id)
 );
+
+/*
+ UPDATE Player
+SET position = 'MIDFIELDER'
+WHERE position = 'Midfielder';
+
+UPDATE Player
+SET position = 'STRIKER'
+WHERE position = 'Forward';
+
+SELECT DISTINCT position FROM Player;
+✅ Étape 2 : Ajouter la contrainte CHECK
+Une fois les données nettoyées :
+
+ALTER TABLE Player
+ADD CONSTRAINT chk_position_valid
+CHECK (position IN ('STRIKER', 'MIDFIELDER', 'DEFENSE', 'GOAL_KEEPER'));
+ */
 
 -- 5. Table Season
 CREATE TABLE Season (

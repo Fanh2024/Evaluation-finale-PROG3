@@ -1,6 +1,7 @@
 package edu.hei.school.evaluation.service;
 
 import edu.hei.school.evaluation.model.Match;
+import edu.hei.school.evaluation.model.MatchLight;
 import edu.hei.school.evaluation.repository.MatchRepository;
 
 import java.time.LocalDate;
@@ -33,14 +34,14 @@ public class MatchService {
     /**
      * Récupère les matchs d'une saison en fonction de plusieurs filtres : statut, club, date.
      *
-     * @param seasonYear Année de début de la saison
-     * @param matchStatus Statut du match (ex: SCHEDULED, FINISHED)
-     * @param clubPlayingName Nom du club jouant à domicile ou extérieur
-     * @param matchAfter Date après laquelle le match doit être programmé (exclusif)
+     * @param seasonYear          Année de début de la saison
+     * @param matchStatus         Statut du match (ex: SCHEDULED, FINISHED)
+     * @param clubPlayingName     Nom du club jouant à domicile ou extérieur
+     * @param matchAfter          Date après laquelle le match doit être programmé (exclusif)
      * @param matchBeforeOrEquals Date jusqu'à laquelle le match doit être programmé (inclusif)
      * @return Liste des matchs correspondant aux critères
      */
-    public List<Match> getMatchesForSeason(
+    public List<MatchLight> getMatchesForSeason(
             int seasonYear,
             String matchStatus,
             String clubPlayingName,

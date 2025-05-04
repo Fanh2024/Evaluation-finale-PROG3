@@ -1,6 +1,8 @@
 package edu.hei.school.evaluation.repository;
 
 import edu.hei.school.evaluation.config.DataBaseConnexion;
+import edu.hei.school.evaluation.exception.BadRequestException;
+import edu.hei.school.evaluation.exception.NotFoundException;
 import edu.hei.school.evaluation.model.*;
 
 import java.sql.*;
@@ -141,8 +143,8 @@ public class MatchRepository {
      * @param before Date jusqu'à laquelle les matchs doivent avoir lieu (nullable)
      * @return Liste des matchs filtrés
      */
-    public List<Match> getMatchesForSeason(int seasonYear, String status, String clubName, LocalDate after, LocalDate before) {
-        List<Match> matches = new ArrayList<>();
+    public List<MatchLight> getMatchesForSeason(int seasonYear, String status, String clubName, LocalDate after, LocalDate before) {
+        List<MatchLight> matches = new ArrayList<>();
         try (Connection conn = db.getConnection()) {
             PreparedStatement seasonStmt = conn.prepareStatement("SELECT id FROM Season WHERE start_year = ?");
             seasonStmt.setInt(1, seasonYear);
@@ -200,22 +202,15 @@ public class MatchRepository {
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                Match match = new Match();
-                match.setId(rs.getString("id"));
-
-                Championship champ = new Championship();
-                champ.setId(rs.getString("championship_id"));
-                match.setChampionship(champ);
-
-                Club home = new Club(); home.setId(rs.getString("home_club_id"));
-                Club away = new Club(); away.setId(rs.getString("away_club_id"));
-                match.setHomeClubId(home);
-                match.setAwayClubId(away);
-
-                match.setStadium(rs.getString("stadium"));
-                match.setDateTime(rs.getTimestamp("date_time").toLocalDateTime());
-                match.setMatchStatus(MatchStatus.valueOf(rs.getString("match_status")));
-
+                MatchLight match = new MatchLight(
+                        rs.getString("id"),
+                        rs.getString("championship_id"),
+                        rs.getString("home_club_id"),
+                        rs.getString("away_club_id"),
+                        rs.getString("stadium"),
+                        rs.getTimestamp("date_time").toLocalDateTime(),
+                        MatchStatus.valueOf(rs.getString("match_status"))
+                );
                 matches.add(match);
             }
             return matches;
@@ -224,21 +219,5 @@ public class MatchRepository {
         }
     }
 
-    /**
-     * Exception levée lorsqu'une ressource est introuvable.
-     */
-    public static class NotFoundException extends RuntimeException {
-        public NotFoundException(String msg) {
-            super(msg);
-        }
-    }
 
-    /**
-     * Exception levée lorsqu'une requête est invalide.
-     */
-    public static class BadRequestException extends RuntimeException {
-        public BadRequestException(String msg) {
-            super(msg);
-        }
-    }
 }
