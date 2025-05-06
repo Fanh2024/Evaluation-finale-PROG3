@@ -15,6 +15,10 @@ public class Championship {
 
     }
 
+    public Championship(String championshipId) {
+        this.id = championshipId;
+    }
+
     // Getters and setters
 
     public String getId() {

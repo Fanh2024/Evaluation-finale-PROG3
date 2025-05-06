@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class PlayerRepository {
@@ -324,5 +325,34 @@ public class PlayerRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Error while saving player statistics", e);
         }
+    }
+
+    public Optional<Player> findById(String id) {
+        final String sql = """
+        SELECT p.id, p.name, p.number, p.position, p.nationality, p.age,
+               c.id AS c_id, c.name AS c_name, c.acronym AS c_acronym,
+               c.creation_year AS c_creation_year, c.stadium_name AS c_stadium_name,
+               ch.id AS ch_id, ch.name AS ch_name, ch.country AS ch_country
+        FROM Player p
+        LEFT JOIN Club c ON p.club_id = c.id
+        LEFT JOIN Championship ch ON c.championship_id = ch.id
+        WHERE p.id = ?
+    """;
+
+        try (Connection connection = dataBaseConnexion.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setString(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapToPlayer(rs));
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error while retrieving player with id: " + id, e);
+        }
+
+        return Optional.empty();
     }
 }

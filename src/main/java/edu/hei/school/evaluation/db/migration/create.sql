@@ -34,12 +34,14 @@ CREATE TABLE Player (
                         id VARCHAR PRIMARY KEY,
                         name VARCHAR(255) NOT NULL,
                         number INT NOT NULL,
-                        position VARCHAR(255) NOT NULL CHECK (position IN ('STRIKER', 'MIDFIELDER', 'DEFENSE', 'GOAL_KEEPER')),
+                        position VARCHAR(255) NOT NULL,
                         nationality VARCHAR(255) NOT NULL,
                         age INT NOT NULL,
                         club_id VARCHAR,
                         FOREIGN KEY (club_id) REFERENCES Club(id)
 );
+
+--ALTER TABLE player DROP CONSTRAINT player_position_check;
 
 /*
  UPDATE Player

@@ -1,15 +1,12 @@
+package edu.hei.school.evaluation.dto;
 
-package edu.hei.school.evaluation.model;
-
-public class Goal {
+public class GoalDto {
     private String id;
-    private Player player;
-    private Match match;
+    private String playerId;
+    private String matchId;
     private int minute;
     private boolean penalty;
     private boolean ownGoal;
-
-    public Goal() {}
 
     public String getId() {
         return id;
@@ -19,20 +16,23 @@ public class Goal {
         this.id = id;
     }
 
-    public Player getPlayer() {
-        return player;
+    public GoalDto() {}
+
+    // Getters et setters
+    public String getPlayerId() {
+        return playerId;
     }
 
-    public void setPlayer(Player player) {
-        this.player = player;
+    public void setPlayerId(String playerId) {
+        this.playerId = playerId;
     }
 
-    public Match getMatch() {
-        return match;
+    public String getMatchId() {
+        return matchId;
     }
 
-    public void setMatch(Match match) {
-        this.match = match;
+    public void setMatchId(String matchId) {
+        this.matchId = matchId;
     }
 
     public int getMinute() {

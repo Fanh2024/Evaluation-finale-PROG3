@@ -66,3 +66,12 @@ INSERT INTO Goal (id, player_id, match_id, minute, is_penalty, is_own_goal) VALU
 -- But contre son camp de Ferran Torres dans MATCH_2
 INSERT INTO Goal (id, player_id, match_id, minute, is_penalty, is_own_goal) VALUES
     ('GOAL_6', 'PLAYER_TORRES', 'MATCH_2', 76, FALSE, TRUE);
+
+-- [GET, PUT] /clubs/{id}/players : récupérer ou créer/mettre à jour les joueurs affectés à un club. (remplacer tous les joueurs du club)
+INSERT INTO Player_Statistics (id, player_id, season_id, assists, yellow_cards, red_cards, minutes_played)
+VALUES
+    ('STAT_GAVI_24_25', 'PLAYER_GAVI', 'SEASON_24_25_LIGA', 5, 2, 0, 2100),
+    ('STAT_PEDRI_24_25', 'PLAYER_PEDRI', 'SEASON_24_25_LIGA', 8, 1, 0, 2300),
+    ('STAT_LEWA_24_25', 'PLAYER_LEWANDOWSKI', 'SEASON_24_25_LIGA', 12, 3, 0, 2500);
+
+

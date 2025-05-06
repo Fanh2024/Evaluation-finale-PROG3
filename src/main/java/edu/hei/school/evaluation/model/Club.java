@@ -21,6 +21,10 @@ public class Club {
 
     }
 
+    public Club(String homeClubId) {
+        this.id = homeClubId;
+    }
+
     // Getters and setters
 
     public String getId() {
