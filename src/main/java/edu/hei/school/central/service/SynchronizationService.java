@@ -1,6 +1,7 @@
 package edu.hei.school.central.service;
 
 import edu.hei.school.central.model.*;
+import edu.hei.school.central.repository.SynchronizationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -10,9 +11,11 @@ import java.util.*;
 public class SynchronizationService {
 
     private final RestTemplate restTemplate;
+    private final SynchronizationRepository repository;
 
-    public SynchronizationService(RestTemplate restTemplate) {
+    public SynchronizationService(RestTemplate restTemplate, SynchronizationRepository repository) {
         this.restTemplate = restTemplate;
+        this.repository = repository;
     }
 
     public SynchronizationResult synchronize() {
@@ -21,41 +24,35 @@ public class SynchronizationService {
         String baseUrl = "http://localhost:8080";
         int currentSeason = 2024;
 
-        // 1. Récupérer tous les clubs
         Club[] clubsArray = restTemplate.getForObject(baseUrl + "/clubs", Club[].class);
         List<Club> clubs = Arrays.asList(Objects.requireNonNull(clubsArray));
-        System.out.println("Clubs récupérés: " + clubs.size());
+        repository.saveClubs(clubs);
 
-        // 2. Récupérer tous les joueurs
         Player[] playersArray = restTemplate.getForObject(baseUrl + "/players", Player[].class);
         List<Player> players = Arrays.asList(Objects.requireNonNull(playersArray));
-        System.out.println("Joueurs récupérés: " + players.size());
+        repository.savePlayers(players);
 
-        /*
-        // 3. Statistiques des clubs par saison
-        List<ClubStatistics> clubStats = new ArrayList<>();
+        List<StatisticsClub> statisticsClubs = new ArrayList<>();
         for (Club club : clubs) {
-            ClubStatistics stats = restTemplate.getForObject(
+            StatisticsClub[] statsArray = restTemplate.getForObject(
                     baseUrl + "/clubs/statistics/" + currentSeason + "?clubId=" + club.getId(),
-                    ClubStatistics.class);
-            System.out.println("Stats club " + club.getName() + " : " + stats);
-            clubStats.add(stats);
+                    StatisticsClub[].class);
+            if (statsArray != null) {
+                statisticsClubs.addAll(Arrays.asList(statsArray));
+            }
         }
-         */
+        repository.saveStatisticsClubs(statisticsClubs, currentSeason);
 
-        // 4. Statistiques des joueurs par saison
         List<PlayerStatistics> playerStats = new ArrayList<>();
         for (Player player : players) {
             PlayerStatistics stats = restTemplate.getForObject(
                     baseUrl + "/players/" + player.getId() + "/statistics/" + currentSeason,
                     PlayerStatistics.class);
-            System.out.println("Stats joueur " + player.getName() + " : " + stats);
             playerStats.add(stats);
         }
+        repository.savePlayerStatistics(playerStats);
 
         System.out.println("Synchronisation terminée !");
-        return new SynchronizationResult(clubs, players, /*clubStats,*/ playerStats);
+        return new SynchronizationResult(players, clubs, statisticsClubs, playerStats);
     }
-
-
 }

@@ -45,7 +45,7 @@ public class BestPlayerRepository {
             LEFT JOIN Club c ON p.club_id = c.id
             LEFT JOIN Championship ch ON c.championship_id = ch.id
             JOIN Season s ON ps.season_id = s.id
-            WHERE s.start_year = (SELECT MAX(start_year) FROM Season)
+            WHERE s.start_year = (SELECT MIN(start_year) FROM Season)
         """;
 
         try (Connection connection = dataBaseConnexion.getConnection();
