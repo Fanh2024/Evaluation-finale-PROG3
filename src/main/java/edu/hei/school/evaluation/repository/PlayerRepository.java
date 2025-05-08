@@ -355,4 +355,62 @@ public class PlayerRepository {
 
         return Optional.empty();
     }
+
+    public Optional<Player> findByIdTransfert(String id) {
+        String sql = """
+        SELECT p.*, c.id AS club_id, c.name AS club_name, c.acronym, c.creation_year, c.stadium_name,
+               champ.id AS champ_id, champ.name AS champ_name, champ.country
+        FROM Player p
+        LEFT JOIN Club c ON p.club_id = c.id
+        LEFT JOIN Championship champ ON c.championship_id = champ.id
+        WHERE p.id = ?
+    """;
+
+        try (Connection conn = dataBaseConnexion.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Championship champ = null;
+                    Club club = null;
+
+                    String clubId = rs.getString("club_id");
+                    if (clubId != null) {
+                        champ = new Championship(
+                                rs.getString("champ_id"),
+                                rs.getString("champ_name"),
+                                rs.getString("country")
+                        );
+
+                        club = new Club(
+                                clubId,
+                                rs.getString("club_name"),
+                                rs.getString("acronym"),
+                                rs.getInt("creation_year"),
+                                rs.getString("stadium_name"),
+                                champ
+                        );
+                    }
+
+                    Player player = new Player(
+                            rs.getString("id"),
+                            rs.getString("name"),
+                            rs.getInt("number"),
+                            rs.getString("position"),
+                            rs.getString("nationality"),
+                            rs.getInt("age"),
+                            club
+                    );
+
+                    return Optional.of(player);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors du findById", e);
+        }
+
+        return Optional.empty();
+    }
+
 }

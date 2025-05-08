@@ -20,10 +20,10 @@ INSERT INTO Coach (id, name, nationality, club_id) VALUES
                                                        ('COACH_FLICK', 'Hansi Flick', 'German', 'CLUB_FCB');
 
 INSERT INTO Player (id, name, number, position, nationality, age, club_id) VALUES
-                                                                               ('PLAYER_VINI', 'Vinicius Jr', 7, 'Forward', 'Brazil', 24, 'CLUB_RMA'),
-                                                                               ('PLAYER_KYLIAN', 'Kylian Mbappé', 9, 'Forward', 'France', 26, 'CLUB_RMA'),
-                                                                               ('PLAYER_YAMAL', 'Lamine Yamal', 19, 'Forward', 'Spain', 17, 'CLUB_FCB'),
-                                                                               ('PLAYER_TORRES', 'Ferran Torres', 7, 'Forward', 'Spain', 25, 'CLUB_FCB');
+                                                                               ('PLAYER_VINI', 'Vinicius Jr', 7, 'STRIKER', 'Brazil', 24, 'CLUB_RMA'),
+                                                                               ('PLAYER_KYLIAN', 'Kylian Mbappé', 9, 'STRIKER', 'France', 26, 'CLUB_RMA'),
+                                                                               ('PLAYER_YAMAL', 'Lamine Yamal', 19, 'STRIKER', 'Spain', 17, 'CLUB_FCB'),
+                                                                               ('PLAYER_TORRES', 'Ferran Torres', 7, 'STRIKER', 'Spain', 25, 'CLUB_FCB');
 
 INSERT INTO Season (id, start_year, end_year, championship_id, season_status) VALUES
                                                                                   ('SEASON_24_25_LIGA', 2024, 2025, 'CHAMP_LIGA', 'STARTED'),

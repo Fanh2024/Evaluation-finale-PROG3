@@ -26,6 +26,31 @@ public class MatchService {
         this.goalRepository = goalRepository;
     }
 
+    /**
+     * Récupère les matchs d'une saison en fonction de plusieurs filtres : statut, club, date.
+     *
+     * @param seasonYear Année de début de la saison
+     * @param matchStatus Statut du match (ex: SCHEDULED, FINISHED)
+     * @param clubPlayingName Nom du club jouant à domicile ou extérieur
+     * @param matchAfter Date après laquelle le match doit être programmé (exclusif)
+     * @param matchBeforeOrEquals Date jusqu'à laquelle le match doit être programmé (inclusif)
+     * @return Liste des matchs correspondant aux critères
+     */
+    public List<Match> getMatchesForSeason(
+            int seasonYear,
+            String matchStatus,
+            String clubPlayingName,
+            LocalDate matchAfter,
+            LocalDate matchBeforeOrEquals
+    ) {
+        return matchRepository.getMatchesForSeason(
+                seasonYear, matchStatus, clubPlayingName, matchAfter, matchBeforeOrEquals);
+    }
+
+    public List<Match> generateMatchesForSeason(int seasonYear) {
+        return matchRepository.generateMatchesForSeason(seasonYear);
+    }
+
     public List<Match> findAllBySeasonYear(int seasonYear) {
         return matchRepository.findAllBySeasonYear(seasonYear);
     }
